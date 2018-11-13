@@ -1,5 +1,6 @@
 plugins {
   id 'com.github.johnrengelman.shadow' version '4.0.2'
+  id "com.github.jk1.dependency-license-report" version "1.3"
   id 'java'
 }
 
@@ -17,7 +18,7 @@ dependencies {
 }
 
 shadowJar {
-   exclude 'META-INF/LICENSE*'
+   exclude 'META-INF/LICENSE.txt'
    exclude 'META-INF/NOTICE*'
    exclude 'META-INF/DEPENDENCIES*'
 }
