@@ -1,0 +1,39 @@
+# This file contains settings for storing offsite backups in the AWS S3 cloud
+# using a third-party commandline tool.
+#
+# You can get a copy of the tool here: 
+# https://github.com/dae1804/bareos-file-backup-to-amazon-s3 
+
+# Set this to your AWS region.
+# When signed into AWS and examining your bucket, look at the URL.
+# You should see a resion= parameter, 
+#   e.g. https://s3.console.aws.amazon.com/s3/home?region=us-east-2
+# If the above were your URL, you'd set this property to us-east-2
+aws.region=
+
+# Name of the AWS S3 bucket to store backups in.
+#
+# You should use a dedicated bucket for your backups,
+# and set up a lifecycle rule with an expiration time.
+# This tool WILL NOT delete your uploaded backups for you,
+# so make sure you set up a rule in AWS to do so.
+aws.bucket=
+
+# AWS access key with read/write access to your bucket.
+# Best practice is to create a dedicated user in the Amazon AWS IAM console,
+#   https://console.aws.amazon.com/iam/home 
+# and grant it access to (only) the bucket listed above.
+aws.accessKeyId=
+aws.secretKeyId=
+
+# Passphrase used to derive the encryption key.
+# Recommended: 20-40chars of random text.
+# Note that the .property file format has some special characters like !, #, and \
+#
+# IMPORTANT: Keep this value SECRET, and keep it SAFE.
+#   If this is disclosed, someone else could read your backups!
+#   If you lose it, you won't be able to decrypt your backups again.
+# Consider printing out a copy of this properties file, and storing
+# in a secure place *outside* your home or place of business, e.g.
+# in a safe-deposit box at your bank.
+encryption.key=
