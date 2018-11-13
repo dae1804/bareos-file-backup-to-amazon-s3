@@ -28,6 +28,8 @@ task fatJar(type: Jar) {
     description = 'Assemble an executable JAR including all dependencies'
     baseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
     with jar
     manifest {
         attributes 'Main-Class': 'com.daveeberhart.bareos_util.secure_s3_storage.Launcher'
