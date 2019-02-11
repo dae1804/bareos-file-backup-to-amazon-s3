@@ -13,8 +13,10 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.bouncycastle.util.encoders.Hex;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -23,6 +25,7 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
 import com.daveeberhart.bareos_util.secure_s3_storage.error.BadArgsException;
+import com.daveeberhart.bareos_util.secure_s3_storage.error.JobFailedException;
 import com.daveeberhart.bareos_util.secure_s3_storage.error.JobFailedException.VolumeMissingException;
 
 /**
@@ -79,7 +82,7 @@ public class BackupJobTest {
       job.setScratchDir(fTestDir);
       job.setRemainingArgs(Arrays.asList("123", "TESTVOL-0001"));
       job.prepare();
-      Mockito.when(job.tm.upload(Mockito.any(), Mockito.any())).then(inv -> {
+      Mockito.when(job.tm.upload(ArgumentMatchers.any(), ArgumentMatchers.any())).then(inv -> {
         UploadResult res = new UploadResult();
 
         PutObjectRequest req = inv.getArgument(0);
@@ -102,7 +105,7 @@ public class BackupJobTest {
 
       Assert.assertFalse(fTestVol001.exists());
 
-      Mockito.verify(job.tm).upload(Mockito.any(), Mockito.any());
+      Mockito.verify(job.tm).upload(ArgumentMatchers.any(), ArgumentMatchers.any());
       Mockito.verifyNoMoreInteractions(job.s3);
     } finally {
       FileUtils.deleteDirectory(fTestDir);
@@ -124,7 +127,7 @@ public class BackupJobTest {
       job.setScratchDir(fTestDir);
       job.setRemainingArgs(Arrays.asList("123", "TESTVOL-0001", "TESTVOL-0002"));
       job.prepare();
-      Mockito.when(job.tm.upload(Mockito.any(), Mockito.any())).then(inv -> {
+      Mockito.when(job.tm.upload(ArgumentMatchers.any(), ArgumentMatchers.any())).then(inv -> {
         UploadResult res = new UploadResult();
 
         PutObjectRequest req = inv.getArgument(0);
@@ -148,14 +151,14 @@ public class BackupJobTest {
 
       Assert.assertFalse(fTestVol001.exists());
 
-      Mockito.verify(job.tm, Mockito.times(2)).upload(Mockito.any(), Mockito.any());
+      Mockito.verify(job.tm, Mockito.times(2)).upload(ArgumentMatchers.any(), ArgumentMatchers.any());
       Mockito.verifyNoMoreInteractions(job.s3, job.tm);
     } finally {
       FileUtils.deleteDirectory(fTestDir);
     }
   }
 
-  @Test(expected=VolumeMissingException.class)
+  @Test
   public void testMissingFile() throws IOException {
     fTestDir.mkdir();
     try {
@@ -163,8 +166,11 @@ public class BackupJobTest {
       job.setScratchDir(fTestDir);
       job.setRemainingArgs(Arrays.asList("123", "TESTVOL-0001"));
       job.prepare();
-      Mockito.when(job.s3.putObject(Mockito.any())).thenThrow(new AssertionError("Should have failed!"));
+      Mockito.when(job.s3.putObject(ArgumentMatchers.any())).thenThrow(new AssertionError("Should have failed!"));
       job.run();
+      Assert.fail("Should have thrown an exception");
+    } catch (JobFailedException e) {
+    	Assert.assertThat(e.getCause(), CoreMatchers.instanceOf(JobFailedException.VolumeMissingException.class));
     } finally {
       FileUtils.deleteDirectory(fTestDir);
     }

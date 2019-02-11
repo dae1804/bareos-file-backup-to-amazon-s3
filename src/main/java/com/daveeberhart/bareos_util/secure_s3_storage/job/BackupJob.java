@@ -35,6 +35,7 @@ import com.daveeberhart.bareos_util.secure_s3_storage.progress.AwsProgressListen
 public class BackupJob extends Job {
   private String jobId;
   protected List<String> volumeNames;
+  private volatile Exception lastFailure;
 
   /* (non-Javadoc)
    * @see com.daveeberhart.bareos_util.secure_s3_storage.job.Job#setRemainingArgs(java.util.List)
@@ -67,8 +68,38 @@ public class BackupJob extends Job {
   @Override
   public void run() {
     System.out.println("Now uploading volumes " + volumeNames);
-    volumeNames.parallelStream().forEach(this::uploadAndRemove);
+    volumeNames.parallelStream().forEach(this::uploadAndRemoveWithRetry);
     System.out.println("Done uploading " + volumeNames.size() + " volumes...");
+    
+    if (lastFailure == null) {
+    	System.err.println("Success!");
+    } else {
+    	throw new JobFailedException("Operation did not complete successfully", lastFailure);
+    }
+  }
+  
+  private void uploadAndRemoveWithRetry(String volume) {
+  	for (int attempt = 1; attempt < 5; attempt++) {
+  		try {
+  			uploadAndRemove(volume);
+  			return;
+  		} catch (Exception e) {
+  			System.out.println("Got " + e.getClass().getSimpleName() + (e.getMessage() != null ? " (" + e.getMessage() + ")" : "") + "; retrying...");
+  			try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e1) {
+					break; // Interrupted; skip to final attempt immediately.
+				}
+  		}
+  	}
+  	
+  	try {
+  		uploadAndRemove(volume);
+  	} catch (Exception e) {
+			System.err.println("Error uploading " + volume);
+			e.printStackTrace();
+			lastFailure = e;
+		}
   }
 
   private void uploadAndRemove(String volume) {
