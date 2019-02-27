@@ -188,6 +188,7 @@ JobDefs {
     RunsOnSuccess = Yes
     RunsOnFailure = No
     FailJobOnError = Yes
+    Runs On Client = No
     
     # Paths might need updated here, if you changed them above:
     Command  = "/usr/bin/java -jar /opt/SecureS3StorageForBareos-all.jar backup /var/lib/bareos/storage/s3 %i '%V'"
