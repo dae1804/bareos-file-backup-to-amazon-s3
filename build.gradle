@@ -17,6 +17,12 @@ dependencies {
     testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
 }
 
+jar {
+   manifest {
+    attributes 'Main-Class': 'com.daveeberhart.bareos_util.secure_s3_storage.Launcher'
+   }
+ }
+
 shadowJar {
    exclude 'META-INF/LICENSE.txt'
    exclude 'META-INF/NOTICE*'

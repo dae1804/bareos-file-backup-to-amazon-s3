@@ -16,7 +16,7 @@ import com.daveeberhart.bareos_util.secure_s3_storage.job.RestoreVolumes;
  * @author deberhar
  */
 public class Launcher {
-  private static final String VERSION = "1.1";
+  private static final String VERSION = "1.2";
 
   public static void main(String[] args) {
     new Launcher().run(args);
